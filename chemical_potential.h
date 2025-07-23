@@ -50,20 +50,19 @@ double gsl_chem_potent_fermi_multiroot(double guess, double tolerance,
 
 //Calculates the root function to find the chemical potential of a Bose gas
 //Uses the density integral
-double root_function_for_mu_bose(double density, double chem_potent_mu,
-    double mass, double degeneracy_g, double temperature);
+int root_function_for_mu_bose_multiroot(const gsl_vector* x, void* p,
+     gsl_vector* fvec);
 
 //Calculates the chemical potential of a Bose gas using the bisection method
-double get_chem_potent_mu_bose_bisection(double tolerance, double low, double high, double temperature, double density,
-    double degeneracy_g, double mass);
+double get_chem_potent_mu_bose_multiroot(double guess, double tolerance, 
+    Parameters& params);
 
 //High Temperature Limit ******************************************************
-double root_function_for_mu_boltzmann(double density, double chem_potent_mu,
-    double mass, double degeneracy_g, double temperature);
+int root_function_for_mu_boltzmann_multiroot(const gsl_vector* x, void* p,
+     gsl_vector* fvec);
 
 //Energy needed to add a particle to the system
-double get_chem_potent_mu_boltzmann_bisection(double tolerance, double low,
-     double high, double temperature, double density, double degeneracy_g,
-     double mass);
+double get_chem_potent_mu_boltzmann_multiroot(double guess, double tolerance, 
+    Parameters& params);
 
 #endif

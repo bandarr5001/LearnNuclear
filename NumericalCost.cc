@@ -9,10 +9,10 @@ int main() {
     Parameters params;
     params.degeneracy_g_ = 2.0; //spin 1/2 for a fermion
     params.mass_ = 938.918; // mean proton + neutron mass in MeV
-    params.temperature_ = 1.0; //temperature T in MeV
+    params.temperature_ = 200.0; //temperature T in MeV
     params.density_ = 122856.691; //density n_0
-    double tolerance = 1e-2;
-    double guess = 1000.0;
+    double tolerance = 1e-6;
+    double guess = 900.0;
 
     std::cout << "Tolerance is: " << tolerance << std::endl;
 
@@ -28,8 +28,6 @@ int main() {
         - start_bisect);
     std::cout << "My bisection method took " << duration_bisect.count()
      << " milliseconds\n" << std::endl;
-
-
 
     auto start_newt = std::chrono::high_resolution_clock::now();
 
@@ -103,5 +101,25 @@ int main() {
     std::cout << "GSL's multiroot method took " << duration_gsl_multi.count() 
     << " milliseconds\n" << std::endl;
 
-    std::cout << "root function usual values: " << root_function_for_mu_fermi(params, guess) << std::endl;
+    auto start_bose_multi = std::chrono::high_resolution_clock::now();
+
+    get_chem_potent_mu_bose_multiroot(guess, tolerance, params);
+
+    auto stop_bose_multi = std::chrono::high_resolution_clock::now();
+    auto duration_bose_multi = 
+    std::chrono::duration_cast<std::chrono::milliseconds>(stop_bose_multi - 
+        start_bose_multi);
+    std::cout << "GSL's multiroot method took " << duration_bose_multi.count() 
+    << " milliseconds\n" << std::endl;
+
+    auto start_boltzmann_multi = std::chrono::high_resolution_clock::now();
+
+    get_chem_potent_mu_boltzmann_multiroot(guess, tolerance, params);
+
+    auto stop_boltzmann_multi = std::chrono::high_resolution_clock::now();
+    auto duration_boltzmann_multi = 
+    std::chrono::duration_cast<std::chrono::milliseconds>(stop_boltzmann_multi - 
+        start_boltzmann_multi);
+    std::cout << "GSL's multiroot method took " << duration_boltzmann_multi.count() 
+    << " milliseconds\n" << std::endl;
 }

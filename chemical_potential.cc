@@ -417,116 +417,199 @@ double gsl_chem_potent_fermi_multiroot(double guess, double tolerance,
 
 //Bose Gas ********************************************************************
 
-double root_function_for_mu_bose(double density, double chem_potent_mu,
-    double mass, double degeneracy_g, double temperature) {
-        std::cout << chem_potent_mu << std::endl;
-    return density -
-    get_density_integral_bose(chem_potent_mu, mass, degeneracy_g, temperature);
+int root_function_for_mu_bose_multiroot(const gsl_vector* x, void* p,
+     gsl_vector* fvec) {
+    auto* par = static_cast<Parameters*>(p);
+    
+    double chem_potent_mu = gsl_vector_get(x, 0);
+
+    if (std::isnan(chem_potent_mu)) {
+        std::cerr << "FATAL: μ is NaN inside root_function: " << chem_potent_mu
+         << std::endl;
+        gsl_vector_set(fvec, 0, 1e10); // Large residual penalty
+        return GSL_SUCCESS;
+    }
+
+    double rho = get_density_integral_bose(chem_potent_mu, par);
+
+    if (std::isnan(rho) || !std::isfinite(rho)) {
+        std::cerr << "FATAL: ρ(μ) returned NaN or Inf!" << std::endl;
+        gsl_vector_set(fvec, 0, 1e10);
+        return GSL_SUCCESS;
+    }
+
+    double residual = par->density_ - rho;
+
+    /*std::cout << "root function call: μ = " << chem_potent_mu
+              << ", ρ(μ) = " << rho
+              << ", residual = " << residual << std::endl;*/
+    gsl_vector_set(fvec, 0, residual);
+    return GSL_SUCCESS;
 }
 
 //Energy needed to add a particle to the system
-double get_chem_potent_mu_bose_bisection(double tolerance, double low, double high,
-    double temperature, double density, double degeneracy_g, double mass) {
-    //Using the bisection method
-    std::cout << "tolerance: " << tolerance << std::endl;
-    std::cout << "low: " << low << std::endl;//Initial bottom of range in MeV
-    std::cout << "high: " << high << std::endl;//Initial top of range in MeV
-    std::cout << "temp: " << temperature << std::endl;
-    std::cout << "density: " << density << std::endl;
-    std::cout << "degeneracy: " << degeneracy_g << std::endl;
-    std::cout << "mass: " << mass << std::endl; 
+double get_chem_potent_mu_bose_multiroot(double guess, double tolerance, 
+    Parameters& params) {
+    const size_t dim = 1;
 
-    double f_low = 
-    root_function_for_mu_bose(density, low, mass, degeneracy_g, temperature);
-    double f_high = 
-    root_function_for_mu_bose(density, high, mass, degeneracy_g, temperature);
+    gsl_multiroot_function F;
 
-    // Check if there's a root in the interval
-    if (f_low * f_high > 0) {
-        std::cerr << "Error: f_low and f_high have the same sign" << std::endl;
-        std::cout << "f_low: " << f_low << " f_high: " << f_high << std::endl;
-        std::cout << "temperature: " << temperature << " density: " << density 
-        << " degeneracy_g: " << degeneracy_g << " mass: " << mass << std::endl;
-        return NAN;
-    }
+    F.f = &root_function_for_mu_bose_multiroot;
+    F.n = dim;
+    F.params = &params;
+    
+    gsl_vector* x = gsl_vector_alloc(dim);
+    gsl_vector_set(x, 0, guess);
 
-    double mid = 0.5 * (low + high);
+    const gsl_multiroot_fsolver_type* T = gsl_multiroot_fsolver_hybrids;
+    gsl_multiroot_fsolver* s = gsl_multiroot_fsolver_alloc(T, dim);
+    gsl_multiroot_fsolver_set(s, &F, x);
 
+    int test_status;
 
-    while(std::abs(high - low)/2 > tolerance) {
-        mid = 0.5 * (low + high);
-        double f_mid = root_function_for_mu_bose(density, mid, mass,
-            degeneracy_g, temperature);
+    size_t i = 0, iMAX = 100;
 
-        if (std::abs(f_mid) < tolerance) return mid;
+    std::cout << "iter μ          f(μ)            |Δμ|" << std::endl;
 
-        if (f_low * f_mid < 0.0) {
-            high = mid;
-            f_high = f_mid;
-        }
+    do {
+        i++;
+        double root_prev = gsl_vector_get(s->x,0);
+        //std::cout << "previous root:" << root_prev << std::endl;
+
+        test_status = gsl_multiroot_fsolver_iterate(s);
         
-        else {
-            low = mid;
-            f_low = f_mid;
-        }
+        double root = gsl_vector_get(s->x,0);
+
+        //std::cout << "current root:" << root << std::endl;
+        double residual = gsl_vector_get(s->f,0);
+
+        std::cout << i << "  " << std::setw(12) << root
+                            << "  " << std::setw(12) << residual
+                            << "  " << std::setw(12) 
+                            << std::fabs(root-root_prev)
+                            << std::endl;
+
+        test_status = gsl_multiroot_test_residual(s->f, tolerance);
+
+
+    } while (test_status == GSL_CONTINUE && i < iMAX);
+
+    double result = gsl_vector_get(s->x,0);
+
+
+    
+    if (test_status == GSL_SUCCESS) {
+        std::cout << "Bose gas chemical potential multiroot GSL: mu = " 
+        << result << " MeV" << std::endl;
     }
 
-    double root = 0.5 * (low + high);
+    else {
+        std::cerr << "Failed to converge:" << gsl_strerror(test_status) 
+        << std::endl;
+    }
 
-    std::cout << "Chemical potential is: " << 
-    std::setprecision (15) << root << " MeV" << std::endl;
-    return root;
+    //gsl_multiroot_fsolver_free(s);
+    //gsl_vector_free(x);
+
+    return result;
 }
 
 //High Temperature Limit ******************************************************
 
-double root_function_for_mu_boltzmann(double density, double chem_potent_mu,
-    double mass, double degeneracy_g, double temperature) {
-    return density -
-    get_density_integral_boltzmann(chem_potent_mu, mass, degeneracy_g,
-        temperature);
+int root_function_for_mu_boltzmann_multiroot(const gsl_vector* x, void* p,
+     gsl_vector* fvec) {
+    auto* par = static_cast<Parameters*>(p);
+    
+    double chem_potent_mu = gsl_vector_get(x, 0);
+
+    if (std::isnan(chem_potent_mu)) {
+        std::cerr << "FATAL: μ is NaN inside root_function: " << chem_potent_mu
+         << std::endl;
+        gsl_vector_set(fvec, 0, 1e10); // Large residual penalty
+        return GSL_SUCCESS;
+    }
+
+    double rho = get_density_integral_boltzmann(chem_potent_mu, par);
+
+    if (std::isnan(rho) || !std::isfinite(rho)) {
+        std::cerr << "FATAL: ρ(μ) returned NaN or Inf!" << std::endl;
+        gsl_vector_set(fvec, 0, 1e10);
+        return GSL_SUCCESS;
+    }
+
+    double residual = par->density_ - rho;
+
+    /*std::cout << "root function call: μ = " << chem_potent_mu
+              << ", ρ(μ) = " << rho
+              << ", residual = " << residual << std::endl;*/
+    gsl_vector_set(fvec, 0, residual);
+    return GSL_SUCCESS;
 }
 
 //Energy needed to add a particle to the system
-double get_chem_potent_mu_boltzmann_bisection(double tolerance, double low, double high,
-    double temperature, double density, double degeneracy_g, double mass) {
-    //Using the bisection method
-    //std::cout << "low: " << low << std::endl;//Initial bottom of range in MeV
-    //std::cout << "high: " << high << std::endl;//Initial top of range in MeV
+double get_chem_potent_mu_boltzmann_multiroot(double guess, double tolerance, 
+    Parameters& params) {
 
-    double f_low = 
-    root_function_for_mu_boltzmann(density, low, mass, degeneracy_g, temperature);
-    double f_high = 
-    root_function_for_mu_boltzmann(density, high, mass, degeneracy_g, temperature);
+    const size_t dim = 1;
 
-    // Check if there's a root in the interval
-    if (f_low * f_high > 0) {
-        std::cerr << "Error: f_low and f_high have the same sign" << std::endl;
-        std::cout << "f_low: " << f_low << " f_high: " << f_high << std::endl;
-        std::cout << "temperature: " << temperature << " density: " << density 
-        << " degeneracy_g: " << degeneracy_g << " mass: " << mass << std::endl;
-        return NAN;
-    }
+    gsl_multiroot_function F;
 
-    double mid = 0.5 * (low + high);
+    F.f = &root_function_for_mu_boltzmann_multiroot;
+    F.n = dim;
+    F.params = &params;
+    
+    gsl_vector* x = gsl_vector_alloc(dim);
+    gsl_vector_set(x, 0, guess);
 
+    const gsl_multiroot_fsolver_type* T = gsl_multiroot_fsolver_hybrids;
+    gsl_multiroot_fsolver* s = gsl_multiroot_fsolver_alloc(T, dim);
+    gsl_multiroot_fsolver_set(s, &F, x);
 
-    while(std::abs(high - low)/2 > tolerance) {
-        mid = 0.5 * (low + high);
-        double f_mid = root_function_for_mu_boltzmann(density, mid, mass,
-            degeneracy_g, temperature);
+    int test_status;
 
-        if (std::abs(f_mid) < tolerance) return mid;
+    size_t i = 0, iMAX = 100;
 
-        if (f_low * f_mid < 0.0) {
-            high = mid;
-            f_high = f_mid;
-        }
+    //std::cout << "iter μ          f(μ)            |Δμ|" << std::endl;
+
+    do {
+        i++;
+        //double root_prev = gsl_vector_get(s->x,0);
+        //std::cout << "previous root:" << root_prev << std::endl;
+
+        test_status = gsl_multiroot_fsolver_iterate(s);
         
-        else {
-            low = mid;
-            f_low = f_mid;
-        }
+        //double root = gsl_vector_get(s->x,0);
+
+        //std::cout << "current root:" << root << std::endl;
+        //double residual = gsl_vector_get(s->f,0);
+
+        /*std::cout << i << "  " << std::setw(12) << root
+                            << "  " << std::setw(12) << residual
+                            << "  " << std::setw(12) 
+                            << std::fabs(root-root_prev)
+                            << std::endl;*/
+
+        test_status = gsl_multiroot_test_residual(s->f, tolerance);
+
+
+    } while (test_status == GSL_CONTINUE && i < iMAX);
+
+    double result = gsl_vector_get(s->x,0);
+
+
+    
+    if (test_status == GSL_SUCCESS) {
+        std::cout << "Boltzmann gas chemical potential multiroot GSL: mu = " 
+        << result << " MeV" << std::endl;
     }
-    return 0.5 * (low + high);
+
+    else {
+        std::cerr << "Failed to converge:" << gsl_strerror(test_status) 
+        << std::endl;
+    }
+
+    //gsl_multiroot_fsolver_free(s);
+    //gsl_vector_free(x);
+
+    return result;
 }

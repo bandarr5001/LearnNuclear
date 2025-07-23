@@ -19,12 +19,12 @@ double get_FermiDirac_dist(double temperature, double energy_epsilon,
 //Bose-Einstein Distribution
 double get_BoseEinstein_dist(double temperature, double energy_epsilon, 
     double chem_potent_mu) {
-    return 1.0
-    / (std::exp((energy_epsilon - chem_potent_mu)/temperature) - 1.0);
+    return 1.0 / (std::exp((energy_epsilon - chem_potent_mu)/temperature)
+    - 1.0);
 }
 
 //Boltzmann Distribution
 double get_Boltzmann_dist(double temperature, double energy_epsilon,
      double chem_potent_mu) {
-    return 1.0 / (std::exp((energy_epsilon - chem_potent_mu)/temperature));
+    return 1.0 / std::exp((energy_epsilon - chem_potent_mu)/temperature);
 }

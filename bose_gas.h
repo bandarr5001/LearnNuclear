@@ -11,19 +11,18 @@
 //Bose-Einsteins Distribution *************************************************
 
 //Calculates the integrand for the density n_B of a Bose gas
-double get_density_integrand_bose(double degeneracy_g, double t,
-    double temperature, double energy_epsilon, double chem_potent_mu);
+double get_density_integrand_bose(double t, double energy_epsilon, 
+    double chem_potent_mu, Parameters& params);
 
 //Calculates the integral for the density n_B of a Bose gas
-double get_density_integral_bose(double chem_potent_mu, double mass,
-    double degeneracy_g, double temperature);
+double get_density_integral_bose(double chem_potent, void *p);
 
 //Calculates the integrand of the pressure of
 double get_P_spherical_integrand_bose(double degeneracy_g, double t, 
     double energy_epsilon, double temperature, double chem_potent_mu);
 
 //calculates the total pressure for an ideal fermi gas using the 
-double bose_gas_pressure_integral_spherical(double temperature, double chem_potent_mu, double degeneracy_g,
-    double mass);
+double bose_gas_pressure_integral_spherical(double temperature, 
+    double chem_potent_mu, double degeneracy_g, double mass);
 
 #endif

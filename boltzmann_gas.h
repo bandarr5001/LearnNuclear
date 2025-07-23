@@ -10,10 +10,8 @@
 
 //HIGH TEMPERATURE LIMIT ******************************************************
 
-double get_density_integrand_boltzmann(double degeneracy_g, double t, 
-    double temperature, double energy_epsilon, double chem_potent_mu);
+double get_density_integrand_boltzmann(double t, double energy_epsilon, double chem_potent_mu, Parameters& params);
 
-double get_density_integral_boltzmann(double chem_potent_mu, double mass,
-    double degeneracy_g, double temperature);
+double get_density_integral_boltzmann(double chem_potent, void *p);
 
 #endif
