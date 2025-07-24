@@ -2,10 +2,9 @@
 CXX = g++
 
 #Compiler flags
-CXXFLAGS = -Wall -g
-#CPPFLAGS = -I/home/path/gsl/include
-#LDFLAGS =  -L/home/path/gsl/lib
-LDLIBS = -lgsl -lgslcblas -lm
+CXXFLAGS = -Wall -g -std=c++11 $(shell gsl-config --cflags)
+LDLIBS = $(shell gsl-config --libs)
+
 #Target executable
 TARGET = NumericalCost
 
