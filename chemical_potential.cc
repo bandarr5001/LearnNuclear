@@ -469,25 +469,25 @@ double get_chem_potent_mu_bose_multiroot(double guess, double tolerance,
 
     size_t i = 0, iMAX = 100;
 
-    std::cout << "iter μ          f(μ)            |Δμ|" << std::endl;
+    //std::cout << "iter μ          f(μ)            |Δμ|" << std::endl;
 
     do {
         i++;
-        double root_prev = gsl_vector_get(s->x,0);
+        //double root_prev = gsl_vector_get(s->x,0);
         //std::cout << "previous root:" << root_prev << std::endl;
 
         test_status = gsl_multiroot_fsolver_iterate(s);
         
-        double root = gsl_vector_get(s->x,0);
+        //double root = gsl_vector_get(s->x,0);
 
         //std::cout << "current root:" << root << std::endl;
-        double residual = gsl_vector_get(s->f,0);
+        //double residual = gsl_vector_get(s->f,0);
 
-        std::cout << i << "  " << std::setw(12) << root
+        /*std::cout << i << "  " << std::setw(12) << root
                             << "  " << std::setw(12) << residual
                             << "  " << std::setw(12) 
                             << std::fabs(root-root_prev)
-                            << std::endl;
+                            << std::endl;*/
 
         test_status = gsl_multiroot_test_residual(s->f, tolerance);
 
