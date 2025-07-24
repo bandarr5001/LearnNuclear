@@ -11,10 +11,10 @@
 #include <iomanip>
 
 struct Parameters {
-    double density_;
-    double mass_;
-    double degeneracy_g_;
-    double temperature_;
+     double degeneracy_g_;
+     double mass_;
+     double density_;
+     double temperature_;
 };
 extern Parameters params;
 
