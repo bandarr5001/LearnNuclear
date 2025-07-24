@@ -5,3 +5,6 @@
 
 # Ignore build artifacts throughout the project
 **/build/
+
+# Ignore executables
+Numerical_cost_of_root_finder_algorithms/NumericalCost

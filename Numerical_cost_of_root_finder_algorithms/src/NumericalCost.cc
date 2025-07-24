@@ -1,125 +1,195 @@
-#include <iostream>
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
-#include <chrono>
-#include "./fermi_gas.h"
+#include <iostream>
+
+#include "./constants.h"
 #include "./chemical_potential.h"
+#include "./fermi_gas.h"
+
+
 
 int main() {
-    Parameters params;
-    params.degeneracy_g_ = 2.0; //spin 1/2 for a fermion
-    params.mass_ = 938.918; // mean proton + neutron mass in MeV
-    params.temperature_ = 200.0; //temperature T in MeV
-    params.density_ = 122856.691; //density n_0
-    double tolerance = 1e-6;
-    double guess = 900.0;
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // Let the user know what you will do
+  std::cout << "\n\n*********************************************************************"
+	    << "\n* This code evaluates the numerical cost of root-finding algorithms *"
+	    << "\n*********************************************************************\n"
+	    << std::endl;
 
-    std::cout << "Tolerance is: " << tolerance << std::endl;
 
-    std::cout << "Guess is: " << guess << std::endl;
+  
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // Define constants
 
-    auto start_bisect = std::chrono::high_resolution_clock::now();
+  // Themordynamic parameters
+  Parameters params = {
+    .degeneracy_g_ = 2.0,     //spin 1/2 for a fermion
+    .mass_ = 938.918,         // mean proton + neutron mass in MeV
+    .density_ = nSat_in_MeV3, //density in MeV^3
+    .temperature_ = 200.0     //temperature T in MeV  
+  };
 
-    get_chem_potent_mu_fermi_bisection(tolerance,500.0,1500.0,params);
+  std::cout << "\nLooking for the chemical potential muB for:"
+	    << "\n     degeneracy = " << params.degeneracy_g_
+	    << "\n           mass = " << params.mass_ << " [MeV]"
+	    << "\n baryon density = " << params.density_ << " [MeV^3]"
+	    << " = " << params.density_ / std::pow(hBarC, 3.0) << " [fm^-3]"
+	    << " = " << params.density_ / nSat_in_MeV3 << " [n_0]"
+	    << "\n    temperature = " << params.temperature_ << " [MeV]"
+	    << std::endl;
 
-    auto stop_bisect = std::chrono::high_resolution_clock::now();
-    auto duration_bisect = 
+
+
+  // Root-finding algorithm parameters
+  const double tolerance = 1e-6;
+  const double guess = 900.0;
+
+  std::cout << "\nRoot-finding algorithms will use:"
+	    << "\n      tolerance = " << tolerance
+	    << "\n          guess = " << guess << " [MeV]" << "\n\n" << std::endl;
+
+
+  
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // Solve the root equation for the chemical potential using a number of methods
+
+  ///////////////////////////////////////////
+  // My bisection method
+  auto start_bisect = std::chrono::high_resolution_clock::now();
+
+  get_chem_potent_mu_fermi_bisection(tolerance,500.0,1500.0,params);
+
+  auto stop_bisect = std::chrono::high_resolution_clock::now();
+  auto duration_bisect = 
     std::chrono::duration_cast<std::chrono::milliseconds>(stop_bisect 
-        - start_bisect);
-    std::cout << "My bisection method took " << duration_bisect.count()
-     << " milliseconds\n" << std::endl;
+							  - start_bisect);
+  std::cout << "My bisection method took " << duration_bisect.count()
+	    << " milliseconds\n" << std::endl;
 
-    auto start_newt = std::chrono::high_resolution_clock::now();
 
-    get_chem_potent_mu_fermi_newton(tolerance, guess, params);
+  
+  ///////////////////////////////////////////
+  // My Newton-Raphson method
+  auto start_newt = std::chrono::high_resolution_clock::now();
 
-    auto stop_newt = std::chrono::high_resolution_clock::now();
-    auto duration_newt = 
+  get_chem_potent_mu_fermi_newton(tolerance, guess, params);
+
+  auto stop_newt = std::chrono::high_resolution_clock::now();
+  auto duration_newt = 
     std::chrono::duration_cast<std::chrono::milliseconds>(stop_newt 
-        - start_newt);
-    std::cout << "My Newton-Raphson method took " << duration_newt.count() << 
-    " milliseconds\n" << std::endl;
+							  - start_newt);
+  std::cout << "My Newton-Raphson method took " << duration_newt.count()
+	    << " milliseconds\n" << std::endl;
 
 
-    auto start_newt_num = std::chrono::high_resolution_clock::now();
+  
+  ///////////////////////////////////////////
+  // My Newton-Raphson method with finite-difference derivative
+  auto start_newt_num = std::chrono::high_resolution_clock::now();
 
-    get_chem_potent_mu_fermi_newton_numerical(tolerance, guess, params);
+  get_chem_potent_mu_fermi_newton_numerical(tolerance, guess, params);
 
-    auto stop_newt_num = std::chrono::high_resolution_clock::now();
-    auto duration_newt_num = 
+  auto stop_newt_num = std::chrono::high_resolution_clock::now();
+  auto duration_newt_num = 
     std::chrono::duration_cast<std::chrono::milliseconds>(stop_newt_num 
-        - start_newt_num);
-    std::cout << "My numerical derivative Newton-Raphson method took " << duration_newt_num.count() << 
+							  - start_newt_num);
+  std::cout << "My numerical derivative Newton-Raphson method took " << duration_newt_num.count() << 
     " milliseconds\n" << std::endl;
 
 
-    auto start_gsl_bisect = std::chrono::high_resolution_clock::now();
+  
+  ///////////////////////////////////////////
+  // GSL bisection
+  auto start_gsl_bisect = std::chrono::high_resolution_clock::now();
 
-    gsl_chem_potent_fermi_bisection(tolerance, params);
+  gsl_chem_potent_fermi_bisection(tolerance, params);
 
-    auto stop_gsl_bisect = std::chrono::high_resolution_clock::now();
-    auto duration_gsl_bisect = 
+  auto stop_gsl_bisect = std::chrono::high_resolution_clock::now();
+  auto duration_gsl_bisect = 
     std::chrono::duration_cast<std::chrono::milliseconds>(stop_gsl_bisect 
-        - start_gsl_bisect);
-    std::cout << "GSL's bisection method took " << duration_gsl_bisect.count()
-     << " milliseconds\n" << std::endl;
+							  - start_gsl_bisect);
+  std::cout << "GSL's bisection method took " << duration_gsl_bisect.count()
+	    << " milliseconds\n" << std::endl;
 
 
+  
+  ///////////////////////////////////////////
+  // GSL Newton-Rapshon method
+  auto start_gsl_newt = std::chrono::high_resolution_clock::now();
 
-    auto start_gsl_newt = std::chrono::high_resolution_clock::now();
+  gsl_chem_potent_fermi_newton(tolerance, guess, params);
 
-    gsl_chem_potent_fermi_newton(tolerance, guess, params);
-
-    auto stop_gsl_newt = std::chrono::high_resolution_clock::now();
-    auto duration_gsl_newt = 
+  auto stop_gsl_newt = std::chrono::high_resolution_clock::now();
+  auto duration_gsl_newt = 
     std::chrono::duration_cast<std::chrono::milliseconds>(stop_gsl_newt - 
-        start_gsl_newt);
-    std::cout << "GSL's Newton-Raphson method took " << 
+							  start_gsl_newt);
+  std::cout << "GSL's Newton-Raphson method took " << 
     duration_gsl_newt.count() << " milliseconds\n" << std::endl;
 
 
-    auto start_gsl_newt_num = std::chrono::high_resolution_clock::now();
+  
+  ///////////////////////////////////////////
+  // GSL Newton-Rapshon method with finite-difference derivative
+  auto start_gsl_newt_num = std::chrono::high_resolution_clock::now();
 
-    gsl_chem_potent_fermi_newton_numerical(tolerance, guess, params);
+  gsl_chem_potent_fermi_newton_numerical(tolerance, guess, params);
 
-    auto stop_gsl_newt_num = std::chrono::high_resolution_clock::now();
-    auto duration_gsl_newt_num = 
+  auto stop_gsl_newt_num = std::chrono::high_resolution_clock::now();
+  auto duration_gsl_newt_num = 
     std::chrono::duration_cast<std::chrono::milliseconds>(stop_gsl_newt_num - 
-        start_gsl_newt_num);
-    std::cout << "GSL's Newton-Raphson method with numerical derivative took " << 
+							  start_gsl_newt_num);
+  std::cout << "GSL's Newton-Raphson method with numerical derivative took " << 
     duration_gsl_newt_num.count() << " milliseconds\n" << std::endl;
 
 
-    auto start_gsl_multi = std::chrono::high_resolution_clock::now();
+  
+  ///////////////////////////////////////////
+  // GSL multiroot hybrid solver
 
-    gsl_chem_potent_fermi_multiroot(guess, tolerance, params);
+  // Fermi gas
+  auto start_gsl_multi_fermi = std::chrono::high_resolution_clock::now();
 
-    auto stop_gsl_multi = std::chrono::high_resolution_clock::now();
-    auto duration_gsl_multi = 
-    std::chrono::duration_cast<std::chrono::milliseconds>(stop_gsl_multi - 
-        start_gsl_multi);
-    std::cout << "GSL's multiroot method took " << duration_gsl_multi.count() 
-    << " milliseconds\n" << std::endl;
+  gsl_chem_potent_fermi_multiroot(guess, tolerance, params);
 
-    auto start_bose_multi = std::chrono::high_resolution_clock::now();
+  auto stop_gsl_multi_fermi = std::chrono::high_resolution_clock::now();
+  auto duration_gsl_multi_fermi = 
+    std::chrono::duration_cast<std::chrono::milliseconds>
+    (stop_gsl_multi_fermi - start_gsl_multi_fermi);
+  std::cout << "GSL's multiroot method for Fermi gas took "
+	    << duration_gsl_multi_fermi.count() << " milliseconds\n" << std::endl;
 
-    get_chem_potent_mu_bose_multiroot(guess, tolerance, params);
+  // Bose gas
+  auto start_gsl_multi_bose = std::chrono::high_resolution_clock::now();
 
-    auto stop_bose_multi = std::chrono::high_resolution_clock::now();
-    auto duration_bose_multi = 
-    std::chrono::duration_cast<std::chrono::milliseconds>(stop_bose_multi - 
-        start_bose_multi);
-    std::cout << "GSL's multiroot method took " << duration_bose_multi.count() 
-    << " milliseconds\n" << std::endl;
+  get_chem_potent_mu_bose_multiroot(guess, tolerance, params);
 
-    auto start_boltzmann_multi = std::chrono::high_resolution_clock::now();
+  auto stop_gsl_multi_bose = std::chrono::high_resolution_clock::now();
+  auto duration_gsl_multi_bose = 
+    std::chrono::duration_cast<std::chrono::milliseconds>
+    (stop_gsl_multi_bose - start_gsl_multi_bose);
+  std::cout << "GSL's multiroot method for Bose gas took "
+	    << duration_gsl_multi_bose.count() << " milliseconds\n" << std::endl;
 
-    get_chem_potent_mu_boltzmann_multiroot(guess, tolerance, params);
+  // Boltzmann gas
+  auto start_gsl_multi_boltzmann = std::chrono::high_resolution_clock::now();
 
-    auto stop_boltzmann_multi = std::chrono::high_resolution_clock::now();
-    auto duration_boltzmann_multi = 
-    std::chrono::duration_cast<std::chrono::milliseconds>(stop_boltzmann_multi - 
-        start_boltzmann_multi);
-    std::cout << "GSL's multiroot method took " << duration_boltzmann_multi.count() 
-    << " milliseconds\n" << std::endl;
+  get_chem_potent_mu_boltzmann_multiroot(guess, tolerance, params);
+
+  auto stop_gsl_multi_boltzmann = std::chrono::high_resolution_clock::now();
+  auto duration_gsl_multi_boltzmann = 
+    std::chrono::duration_cast<std::chrono::milliseconds>
+    (stop_gsl_multi_boltzmann - start_gsl_multi_boltzmann);
+  std::cout << "GSL's multiroot method for Boltzmann gas took "
+	    << duration_gsl_multi_boltzmann.count() << " milliseconds\n" << std::endl;
+
+
+  
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // // Let the user know everything went well
+  std::cout << "\n\n*********************************************************************"
+	    << "\n* Finished evaluating the numerical cost of root-finding algorithms *"
+	    << "\n*********************************************************************\n"
+	    << std::endl;
+  return 0;
 }
