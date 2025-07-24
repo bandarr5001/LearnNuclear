@@ -1,0 +1,7 @@
+# List of files that git will ignore
+
+# macOS system files throughout the project
+**/.DS_Store
+
+# Ignore build artifacts throughout the project
+**/build/
