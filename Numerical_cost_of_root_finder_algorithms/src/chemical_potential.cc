@@ -27,14 +27,8 @@ double root_function_for_mu_fermi(Parameters& params, double chem_potent_mu) {
 double root_function_for_mu_fermi_gsl(double chem_potent, void *p) {
   auto *par = static_cast<Parameters*>(p);
 
-  //std::cout << "density in root_function_for_mu_fermi_gsl: "
-  // << par->density_ << std::endl;
-
   double residual = par->density_ - 
     get_density_integral_fermi(*par, chem_potent);
-
-  //std::cout << "residual in root_function_for_mu_fermi_gsl: "
-  // << residual << std::endl;
 
   return residual;
 }
@@ -105,13 +99,9 @@ double get_chem_potent_mu_fermi_newton_numerical(double tolerance, double guess,
 
   while (std::abs(root_condition) > tolerance && i++ < iMAX) {
     root_condition = root_function_for_mu_fermi(params, chem_potent_mu);
-    //std::cout << "root_condition: " << root_condition << std::endl;
 
     density_deriv_integral = 
       get_density_derivative_integral_fermi_numerical(chem_potent_mu, params);
-
-    //std::cout << "density_integral: " << density_integral << 
-    //" density_deriv_integral: " << density_deriv_integral << std::endl;
 
     delta_mu = root_condition/density_deriv_integral;
 
@@ -121,10 +111,8 @@ double get_chem_potent_mu_fermi_newton_numerical(double tolerance, double guess,
       return chem_potent_mu;
     }
 
-    //std::cout << "delta_mu: " << delta_mu << std::endl;
 
     chem_potent_mu -= delta_mu;
-    //std::cout << "chem_potent_mu: " << chem_potent_mu << std::endl;
 
   }
   std::cout << "Fermi gas chemical potential numerical Newton-Raphson: mu = " << 
@@ -148,13 +136,9 @@ double get_chem_potent_mu_fermi_newton(double tolerance, double guess,
 
   while (std::abs(root_condition) > tolerance && i++ < iMAX) {
     root_condition = root_function_for_mu_fermi(params, chem_potent_mu);
-    //std::cout << "root_condition: " << root_condition << std::endl;
 
     density_deriv_integral = 
       get_density_derivative_integral_fermi(chem_potent_mu, params);
-
-    //std::cout << "density_integral: " << density_integral << 
-    //" density_deriv_integral: " << density_deriv_integral << std::endl;
 
     delta_mu = root_condition/density_deriv_integral;
 
@@ -164,10 +148,7 @@ double get_chem_potent_mu_fermi_newton(double tolerance, double guess,
       return chem_potent_mu;
     }
 
-    //std::cout << "delta_mu: " << delta_mu << std::endl;
-
     chem_potent_mu -= delta_mu;
-    //std::cout << "chem_potent_mu: " << chem_potent_mu << std::endl;
 
   }
   std::cout << "Fermi gas chemical potential Newton-Raphson: mu = " << chem_potent_mu
@@ -186,7 +167,7 @@ double gsl_chem_potent_fermi_bisection(double tolerance, Parameters& params) {
   const gsl_root_fsolver_type *T = gsl_root_fsolver_bisection;
   gsl_root_fsolver *solver = gsl_root_fsolver_alloc(T);
 
-  double low = 500;
+  double low = 100;
   double high = 1500;
 
   
@@ -211,8 +192,6 @@ double gsl_chem_potent_fermi_bisection(double tolerance, Parameters& params) {
   // Set the solver
   gsl_root_fsolver_set(solver, &F, low, high);
 
-  //std::cout << "HERE" << std::endl;
-
   int test_status;
   int i = 0;
   int iMAX = 100;
@@ -227,7 +206,6 @@ double gsl_chem_potent_fermi_bisection(double tolerance, Parameters& params) {
     // Stop when close enough
     test_status = gsl_root_test_interval(low, high, 0.0, tolerance);
 
-    //std::cout << "Iter " << i << ": x = " << root << "\n";
   } while (test_status == GSL_CONTINUE && i < iMAX);
 
   if (test_status == GSL_SUCCESS) {
@@ -246,13 +224,10 @@ void gsl_fdf_fermi_newton(double mu, void *p, double *f, double *df) {
 
   *f  = root_function_for_mu_fermi_gsl(mu,par);
   *df = get_density_derivative_integral_fermi_gsl_numerical(mu,par);
-
-  //std::cout << "f(mu) = " << *f << " df = " << *df << std::endl;
 }
 
 double gsl_chem_potent_fermi_newton(double tolerance, double guess, 
 				    Parameters& params) {
-  //gsl_set_error_handler_off();
   gsl_function_fdf F;
 
   F.f = &root_function_for_mu_fermi_gsl;
@@ -276,13 +251,6 @@ double gsl_chem_potent_fermi_newton(double tolerance, double guess,
     test_status = gsl_root_fdfsolver_iterate(s);
     root = gsl_root_fdfsolver_root(s);
     test_status =  gsl_root_test_delta(root, root_prev, 0, tolerance);
-
-    /*std::cout << "iter " << i 
-      << ": mu = " << root 
-      << ", f(mu) = " << root_function_for_mu_fermi_gsl(root, &params)
-      << ", df(mu) = " << 
-      get_density_derivative_integral_fermi_gsl(root, &params)
-      << std::endl;*/
   } while(test_status == GSL_CONTINUE && i < iMAX);
     
   if (test_status == GSL_SUCCESS) {
@@ -300,7 +268,6 @@ double gsl_chem_potent_fermi_newton(double tolerance, double guess,
 
 double gsl_chem_potent_fermi_newton_numerical(double tolerance, double guess, 
 					      Parameters& params) {
-  //gsl_set_error_handler_off();
   gsl_function_fdf F;
 
   F.f = &root_function_for_mu_fermi_gsl;
@@ -324,13 +291,6 @@ double gsl_chem_potent_fermi_newton_numerical(double tolerance, double guess,
     test_status = gsl_root_fdfsolver_iterate(s);
     root = gsl_root_fdfsolver_root(s);
     test_status =  gsl_root_test_delta(root, root_prev, 0, tolerance);
-
-    /*std::cout << "iter " << i 
-      << ": mu = " << root 
-      << ", f(mu) = " << root_function_for_mu_fermi_gsl(root, &params)
-      << ", df(mu) = " << 
-      get_density_derivative_integral_fermi_gsl(root, &params)
-      << std::endl;*/
   } while(test_status == GSL_CONTINUE && i < iMAX);
     
   if (test_status == GSL_SUCCESS) {
@@ -369,9 +329,6 @@ int root_function_for_mu_fermi_gsl_multiroot(const gsl_vector* x, void* p,
 
   double residual = par->density_ - rho;
 
-  /*std::cout << "root function call: μ = " << chem_potent_mu
-    << ", ρ(μ) = " << rho
-    << ", residual = " << residual << std::endl;*/
   gsl_vector_set(fvec, 0, residual);
   return GSL_SUCCESS;
 }
@@ -398,28 +355,12 @@ double gsl_chem_potent_fermi_multiroot(double guess, double tolerance,
 
   size_t i = 0, iMAX = 100;
 
-  //std::cout << "iter μ          f(μ)            |Δμ|" << std::endl;
-
   do {
     i++;
-    //double root_prev = gsl_vector_get(s->x,0);
-    //std::cout << "previous root:" << root_prev << std::endl;
 
     test_status = gsl_multiroot_fsolver_iterate(s);
-        
-    //double root = gsl_vector_get(s->x,0);
-
-    //std::cout << "current root:" << root << std::endl;
-    //double residual = gsl_vector_get(s->f,0);
-
-    /*std::cout << i << "  " << std::setw(12) << root
-      << "  " << std::setw(12) << residual
-      << "  " << std::setw(12) 
-      << std::fabs(root-root_prev)
-      << std::endl;*/
 
     test_status = gsl_multiroot_test_residual(s->f, tolerance);
-
 
   } while (test_status == GSL_CONTINUE && i < iMAX);
 
@@ -436,9 +377,6 @@ double gsl_chem_potent_fermi_multiroot(double guess, double tolerance,
     std::cerr << "Failed to converge:" << gsl_strerror(test_status) 
 	      << std::endl;
   }
-
-  //gsl_multiroot_fsolver_free(s);
-  //gsl_vector_free(x);
 
   return result;
 }
@@ -468,9 +406,6 @@ int root_function_for_mu_bose_multiroot(const gsl_vector* x, void* p,
 
   double residual = par->density_ - rho;
 
-  /*std::cout << "root function call: μ = " << chem_potent_mu
-    << ", ρ(μ) = " << rho
-    << ", residual = " << residual << std::endl;*/
   gsl_vector_set(fvec, 0, residual);
   return GSL_SUCCESS;
 }
@@ -497,18 +432,14 @@ double get_chem_potent_mu_bose_multiroot(double guess, double tolerance,
 
   size_t i = 0, iMAX = 100;
 
-  std::cout << "iter μ          f(μ)            |Δμ|" << std::endl;
-
   do {
     i++;
     double root_prev = gsl_vector_get(s->x,0);
-    //std::cout << "previous root:" << root_prev << std::endl;
 
     test_status = gsl_multiroot_fsolver_iterate(s);
         
     double root = gsl_vector_get(s->x,0);
 
-    //std::cout << "current root:" << root << std::endl;
     double residual = gsl_vector_get(s->f,0);
 
     std::cout << i << "  " << std::setw(12) << root
@@ -535,10 +466,6 @@ double get_chem_potent_mu_bose_multiroot(double guess, double tolerance,
     std::cerr << "Failed to converge:" << gsl_strerror(test_status) 
 	      << std::endl;
   }
-
-  //gsl_multiroot_fsolver_free(s);
-  //gsl_vector_free(x);
-
   return result;
 }
 
@@ -567,9 +494,6 @@ int root_function_for_mu_boltzmann_multiroot(const gsl_vector* x, void* p,
 
   double residual = par->density_ - rho;
 
-  /*std::cout << "root function call: μ = " << chem_potent_mu
-    << ", ρ(μ) = " << rho
-    << ", residual = " << residual << std::endl;*/
   gsl_vector_set(fvec, 0, residual);
   return GSL_SUCCESS;
 }
@@ -597,34 +521,13 @@ double get_chem_potent_mu_boltzmann_multiroot(double guess, double tolerance,
 
   size_t i = 0, iMAX = 100;
 
-  //std::cout << "iter μ          f(μ)            |Δμ|" << std::endl;
-
   do {
     i++;
-    //double root_prev = gsl_vector_get(s->x,0);
-    //std::cout << "previous root:" << root_prev << std::endl;
-
     test_status = gsl_multiroot_fsolver_iterate(s);
-        
-    //double root = gsl_vector_get(s->x,0);
-
-    //std::cout << "current root:" << root << std::endl;
-    //double residual = gsl_vector_get(s->f,0);
-
-    /*std::cout << i << "  " << std::setw(12) << root
-      << "  " << std::setw(12) << residual
-      << "  " << std::setw(12) 
-      << std::fabs(root-root_prev)
-      << std::endl;*/
-
     test_status = gsl_multiroot_test_residual(s->f, tolerance);
-
-
   } while (test_status == GSL_CONTINUE && i < iMAX);
 
   double result = gsl_vector_get(s->x,0);
-
-
     
   if (test_status == GSL_SUCCESS) {
     std::cout << "Boltzmann gas chemical potential multiroot GSL: mu = " 
@@ -635,9 +538,6 @@ double get_chem_potent_mu_boltzmann_multiroot(double guess, double tolerance,
     std::cerr << "Failed to converge:" << gsl_strerror(test_status) 
 	      << std::endl;
   }
-
-  //gsl_multiroot_fsolver_free(s);
-  //gsl_vector_free(x);
-
+  
   return result;
 }
