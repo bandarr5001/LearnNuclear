@@ -67,9 +67,12 @@ int conditions(const gsl_vector* x, void* p,
 
     gsl_vector_set(f, 1, condition2);
 //Need to solve equations 31 and 32 explicitly
-    const double K = 9 * ;
-    const double K_0 = p_momentum_Fermi*p_momentum_Fermi
-        * ;
+    const double K = 9 * (((params.degeneracy_g_*energy_epsilon_Fermi
+        *p_momentum_Fermi*p_momentum_Fermi*p_momentum_Fermi)/(9*par->density_
+        *M_PI*M_PI)) + (A*(par->density_/nSat_in_MeV3)) + (B*(tau-1)*(std::pow(par->density_,tau-1.0)/std::pow(nSat_in_MeV3,tau-1.0))));
+    const double K_0 = (params.degeneracy_g_*energy_epsilon_Fermi
+        *p_momentum_Fermi*p_momentum_Fermi*p_momentum_Fermi)/(nSat_in_MeV3
+        *M_PI*M_PI);
 
     const double condition3 = K - K_0;
 
