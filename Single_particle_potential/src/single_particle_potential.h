@@ -16,6 +16,7 @@
 struct potential_parameters {
     const double density_;
     const double binding_energy_;
+    const double incompress_at_satdense_;
 };
 extern potential_parameters pparams;
 
@@ -43,5 +44,8 @@ int conditions(const gsl_vector* x, void* p,
 //of the single particle potential 
 potential_results get_parameters(double guess_A, double guess_B,
      double guess_tau, double tolerance, potential_parameters pparams);
+
+double get_single_particle_potential(potential_results parameter_results,
+     potential_parameters pparams);
 
 #endif

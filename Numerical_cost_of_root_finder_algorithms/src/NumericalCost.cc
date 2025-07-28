@@ -25,7 +25,7 @@ int main() {
     ////////////////////////////////////////////////////////////////////////////////////////
     // Define constants
 
-    // Themordynamic parameters
+    // Thermodynamic parameters
     Parameters params = {
       .degeneracy_g_ = 2.0,     //spin 1/2 for a fermion
       .mass_ = 938.918,         // mean proton + neutron mass in MeV

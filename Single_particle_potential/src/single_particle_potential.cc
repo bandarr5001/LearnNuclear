@@ -66,13 +66,14 @@ int conditions(const gsl_vector* x, void* p,
         - (energy_density_FG/nSat_in_MeV3) + (A/2) + B*((tau - 1)/tau);
 
     gsl_vector_set(f, 1, condition2);
-//Need to solve equations 31 and 32 explicitly
+
     const double K = 9 * (((params.degeneracy_g_*energy_epsilon_Fermi
         *p_momentum_Fermi*p_momentum_Fermi*p_momentum_Fermi)/(9*par->density_
-        *M_PI*M_PI)) + (A*(par->density_/nSat_in_MeV3)) + (B*(tau-1)*(std::pow(par->density_,tau-1.0)/std::pow(nSat_in_MeV3,tau-1.0))));
-    const double K_0 = (params.degeneracy_g_*energy_epsilon_Fermi
-        *p_momentum_Fermi*p_momentum_Fermi*p_momentum_Fermi)/(nSat_in_MeV3
-        *M_PI*M_PI);
+        *M_PI*M_PI)) + (A*(par->density_/nSat_in_MeV3)) + 
+        (B*(tau-1)*(std::pow(par->density_,tau-1.0) 
+        /std::pow(nSat_in_MeV3,tau-1.0))));
+
+    const double K_0 = par->incompress_at_satdense_;
 
     const double condition3 = K - K_0;
 
@@ -116,7 +117,7 @@ potential_results get_parameters(double guess_A, double guess_B, double guess_ta
   parameter_results.tau = gsl_vector_get(s->x,2);
     
   if (test_status == GSL_SUCCESS) {
-    std::cout << "Single particle potential parameters for V(" << params.density_ <<") at T = 0: A = " 
+    std::cout << "Single particle potential parameters for V(" << pparams.density_ <<") at T = 0: A = " 
 	      << parameter_results.A << " B = " << parameter_results.B << " tau = " << parameter_results.tau << " MeV" << std::endl;
   }
 
@@ -126,4 +127,11 @@ potential_results get_parameters(double guess_A, double guess_B, double guess_ta
   }
   
   return ;
+}
+
+double get_single_particle_potential(potential_results parameter_results,
+     potential_parameters pparams) {
+    double potential = parameter_results.A*(pparams.density_/nSat_in_MeV3) + parameter_results.B*std::pow(pparams.density_/nSat_in_MeV3,parameter_results.tau - 1.0);
+    std::cout << "Single particle potential parameters for V(" << pparams.density_ << ") = " << potential << " MeV" << std::endl;
+    return potential; 
 }
