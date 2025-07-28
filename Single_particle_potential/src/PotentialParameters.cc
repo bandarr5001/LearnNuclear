@@ -17,27 +17,23 @@ int main() {
 
     try{
 
-
-      // Thermodynamic parameters
-      Parameters params = {
-        .degeneracy_g_ = 2.0,     //spin 1/2 for a fermion
-        .mass_ = 938.918,         // mean proton + neutron mass in MeV
-        .density_ = nSat_in_MeV3, //density in MeV^3
-        .temperature_ = 200.0     //temperature T in MeV  
-      };
-
       potential_parameters pparams = {
-        .density_ = nSat_in_MeV3,
+        .degeneracy_g_ = 2.0,     //spin 1/2 for a fermion
+        .mass_ = mNucleon,         // mean proton + neutron mass in MeV
+        .density_ = nSat_in_MeV3, //density in MeV^3
         .binding_energy_ = -16.3, //in MeV
         .incompress_at_satdense_ = 240.0 //in MeV
       };
 
-      double guess_A =  -200.0;
-      double guess_B = 150.0;
-      double guess_tau = 2.0;
-      double tolerance = 1e-6;
+      potential_results parameter_results = {
+        .A = -218.699,
+        .B = 166.215,
+        .tau = 2.33376
+      };
 
-      get_parameters(guess_A, guess_B, guess_tau, tolerance, pparams);
+      double tolerance = 1e-2;
+
+      get_parameters(parameter_results, tolerance, pparams);
 
       std::cout << "\n\n*********************************************************************"
 	    << "\n* Finished evaluating the potential parameters A, B, and tau for single particle potentials *"
