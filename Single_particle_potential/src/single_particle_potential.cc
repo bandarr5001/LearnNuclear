@@ -120,6 +120,7 @@ int conditions(const gsl_vector* x, void* p,
 
     std::cout << std::setprecision(10);
     std::cout << "[DEBUG] Inputs: A = " << A << ", B = " << B << ", tau = " << tau << std::endl;
+    std::cout << "[DEBUG] Nuclear Matter Properties: g = " << par->degeneracy_g_ << ", mass = " << par->mass_ << ", density = " << par->density_ << ", B_0 = " << par->binding_energy_ << ", K_0 = " << par->incompress_at_satdense_ << std::endl;
     std::cout << "[DEBUG] fermi_momentum = " << p_momentum_Fermi << std::endl;
     std::cout << "[DEBUG] fermi_energy = " << energy_epsilon_Fermi << std::endl;
     std::cout << "[DEBUG] energy_density_FG = " << energy_density_FG << std::endl;
@@ -167,10 +168,7 @@ potential_results get_parameters(potential_results parameter_results, double tol
     }
     test_status = gsl_multiroot_test_residual(s->f, tolerance);
     
-    std::cout << "i: " << i << " A = " << gsl_vector_get(s->x,0) << " B = " << gsl_vector_get(s->x,1) << " tau = " << gsl_vector_get(s->x,2) << std::endl;
-    std::cout << "f0 = " << gsl_vector_get(s->f, 0)
-          << ", f1 = " << gsl_vector_get(s->f, 1)
-          << ", f2 = " << gsl_vector_get(s->f, 2) << "\n" << std::endl;
+    std::cout << "i: " << i << std::endl;
   } while (test_status == GSL_CONTINUE && i < iMAX);
 
   parameter_results.A = gsl_vector_get(s->x,0);
