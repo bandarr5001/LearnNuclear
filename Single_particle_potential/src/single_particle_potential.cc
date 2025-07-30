@@ -12,18 +12,18 @@
 #include "./single_particle_potential.h"
 
 // Constructor
-FermiWrapper::FermiWrapper(const potential_parameters& p) : params(p) {}
+//FermiWrapper::FermiWrapper(nuclear_properties* p) : props(p) {}
 
 //Calculates the fermi momentum at density n_B
 double FermiWrapper::fermi_momentum() const {
     return std::pow(6.0*std::pow(M_PI,2.0)*
-    params.saturation_density_/params.degeneracy_g_,1.0/3.0);
+    props->saturation_density_/props->degeneracy_g_,1.0/3.0);
 }
 
 //Calculates the fermi energy at density n_B
 double FermiWrapper::fermi_energy() const {
     double p_momentum_fermi = fermi_momentum();
-    return std::sqrt(params.mass_*params.mass_ + 
+    return std::sqrt(props->mass_*props->mass_ + 
         p_momentum_fermi*p_momentum_fermi);
 }
 
@@ -36,13 +36,13 @@ double FermiWrapper::energy_density_Fermigas() const {
 
     double term1 = 2.0*epsilon_F*epsilon_F*epsilon_F*p_F;
 
-    double term2 =epsilon_F*p_F*params.mass_*params.mass_;
+    double term2 =epsilon_F*p_F*props->mass_*props->mass_;
 
-    double term3 = params.mass_*params.mass_*params.mass_*params.mass_
-    *std::log((epsilon_F + p_F)/params.mass_);
+    double term3 = props->mass_*props->mass_*props->mass_*props->mass_
+    *std::log((epsilon_F + p_F)/props->mass_);
 
     //Calculates energy density at T = 0
-    return (params.degeneracy_g_ / (16.0 * M_PI*M_PI))
+    return (props->degeneracy_g_ / (16.0 * M_PI*M_PI))
     * (term1 - term2 - term3);
 }
 
@@ -62,7 +62,7 @@ double FermiWrapper::energy_density_callback(void* p) {
 int conditions(const gsl_vector* x, void* p,
 					     gsl_vector* f) {
     auto* wrapper = static_cast<FermiWrapper*>(p);
-    auto* par = static_cast<potential_parameters*>(p);
+    auto* props = wrapper->props;
     
     //pulling in the current guess for each parameter
     double A = gsl_vector_get(x,0);
@@ -77,7 +77,7 @@ int conditions(const gsl_vector* x, void* p,
     //Equation 25, written out explicitly and equal to zero
     //Condition 1 is at density n_B
     double condition1 = (energy_density_FG/nSat_in_MeV3) + ((A/2.0) + (B/tau))
-     - par->mass_ - par->binding_energy_;
+     - props->mass_ - props->binding_energy_;
 
     gsl_vector_set(f, 0, condition1);
 
@@ -94,7 +94,7 @@ int conditions(const gsl_vector* x, void* p,
 
     //Term 1 is the derivative of P_FG 
     //Calculated using Mathematica for time, numerically identical to given solution
-    double term1 = (par->degeneracy_g_*p_momentum_Fermi*
+    double term1 = (props->degeneracy_g_*p_momentum_Fermi*
         p_momentum_Fermi*p_momentum_Fermi*
         p_momentum_Fermi*p_momentum_Fermi)
         /(18.0*energy_epsilon_Fermi*M_PI*M_PI*nSat_in_MeV3);
@@ -105,7 +105,7 @@ int conditions(const gsl_vector* x, void* p,
 
     double K = 9.0 * (term1 + term2 + term3);
 
-    double condition3 = K - par->incompress_at_satdense_;
+    double condition3 = K - props->incompress_at_satdense_;
 
     gsl_vector_set(f, 2, condition3);
 
@@ -126,15 +126,17 @@ int conditions(const gsl_vector* x, void* p,
 //Uses GSL multiroot to calculate the parameters A, B, and tau for the 
 //single particle potential 
 potential_results get_parameters(potential_results parameter_results,
-    double tolerance, potential_parameters pparams) {
+    double tolerance, nuclear_properties props) {
     //Number of parameters being solved for
     const size_t dim = 3;
+
+    FermiWrapper wrapper(&props);
 
     gsl_multiroot_function F;
 
     F.f = &conditions;
     F.n = dim;
-    F.params = &pparams;
+    F.params = &wrapper;
         
     //Sets the parameters vector to the initial guesses for A, B, and tau
     gsl_vector* x = gsl_vector_alloc(dim);
@@ -174,7 +176,7 @@ potential_results get_parameters(potential_results parameter_results,
     //Tells you what the roots are when they are solved for
     if (test_status == GSL_SUCCESS) {
         std::cout << "Single particle potential parameters for V(n_0) at T = 0: A = " 
-        << parameter_results.A << " B = " << parameter_results.B << " tau = " 
+        << parameter_results.A << ", B = " << parameter_results.B << ", tau = " 
         << parameter_results.tau << " MeV" << std::endl;
     }
     //Tells you if the root solver fails to converge
@@ -188,13 +190,13 @@ potential_results get_parameters(potential_results parameter_results,
 
 //Calculates the single particle potential with the calculated parameters
 double get_single_particle_potential(potential_results parameter_results,
-    potential_parameters pparams) {
+    nuclear_properties props) {
     //Equation 15 in Interactions in Nuclear matter
-    double potential = parameter_results.A*(pparams.saturation_density_/nSat_in_MeV3) +
+    double potential = parameter_results.A*(props.saturation_density_/nSat_in_MeV3) +
      parameter_results.B*
-     std::pow(pparams.saturation_density_/nSat_in_MeV3,parameter_results.tau - 1.0);
+     std::pow(props.saturation_density_/nSat_in_MeV3,parameter_results.tau - 1.0);
 
-    std::cout << "Single particle potential for V(n_B = " << pparams.saturation_density_ 
+    std::cout << "Single particle potential for V(n_B = " << props.saturation_density_ 
     << ") = " << potential << " MeV" << std::endl;
     //Returns the potential for possible future use
     return potential; 

@@ -20,7 +20,7 @@ int main() {
 
     try{
 
-      potential_parameters pparams = {
+      nuclear_properties props = {
         .degeneracy_g_ = 4.0,     //spin 1/2 for a fermion
         .mass_ = mNucleon,         // mean proton + neutron mass in MeV
         .saturation_density_ = nSat_in_MeV3, //density in MeV^3
@@ -36,9 +36,9 @@ int main() {
 
       const double tolerance = 1e-8;
 
-      parameter_results = get_parameters(parameter_results, tolerance, pparams);
+      parameter_results = get_parameters(parameter_results, tolerance, props);
 
-      get_single_particle_potential(parameter_results, pparams);
+      get_single_particle_potential(parameter_results, props);
 
       std::cout << "\n\n*********************************************************************"
 	    << "\n* Finished evaluating the potential parameters A, B, and tau for single particle potentials *"

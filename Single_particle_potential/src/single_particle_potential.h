@@ -14,14 +14,14 @@
 #include "./constants.h"
 
 //struct for the parameters and nuclear properties for the calculation
-struct potential_parameters {
+struct nuclear_properties {
     const double degeneracy_g_;
     const double mass_;
     const double saturation_density_;
     const double binding_energy_;
     const double incompress_at_satdense_;
 };
-extern potential_parameters pparams;
+extern nuclear_properties props;
 
 //struct for the results of the root solver
 struct potential_results {
@@ -31,11 +31,11 @@ struct potential_results {
 };
 extern potential_results parameter_results;
 
-struct FermiWrapper {
-    potential_parameters params;
-
+class FermiWrapper {
+public:
+    nuclear_properties* props;
     //Constructor
-    FermiWrapper(const potential_parameters& p);
+    FermiWrapper(nuclear_properties* p) : props(p) {}
 
     //Member Functions
 
@@ -62,10 +62,10 @@ int conditions(const gsl_vector* x, void* p,
 //Uses GSL multiroot to calculate the parameters A, B, and tau for the 
 //single particle potential 
 potential_results get_parameters(potential_results parameter_results, 
-    double tolerance, potential_parameters pparams);
+    double tolerance, nuclear_properties props);
 
 //Calculates the single particle potential with the calculated parameters
 double get_single_particle_potential(potential_results parameter_results,
-     potential_parameters pparams);
+     nuclear_properties props);
 
 #endif
