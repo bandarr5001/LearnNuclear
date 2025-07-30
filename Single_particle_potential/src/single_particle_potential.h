@@ -13,6 +13,7 @@
 #include "./core_statmech_functions.h"
 #include "./constants.h"
 
+//struct for the parameters and nuclear properties for the calculation
 struct potential_parameters {
     const double degeneracy_g_;
     const double mass_;
@@ -22,6 +23,7 @@ struct potential_parameters {
 };
 extern potential_parameters pparams;
 
+//struct for the results of the root solver
 struct potential_results {
     double A;
     double B;
@@ -29,31 +31,37 @@ struct potential_results {
 };
 extern potential_results parameter_results;
 
+//Calculates the fermi momentum at density n_B
 double fermi_momentum(void *p);
 
+//Calculates the fermi energy at density n_B
 double fermi_energy(void *p);
 
-//Calculates the energy density of a spherical, ideal, noninteracting fermi gas
-//at T = 0
+//Calculates the energy density of a spherical, ideal, 
+//noninteracting fermi gas at density n_B at T=0
 double energy_density_Fermigas(void *p);
 
+//Calculates the fermi momentum at saturation density in MeV^3
 double fermi_momentum_satdense(void *p);
 
+//Calculates the fermi energy at saturation density in MeV^3
 double fermi_energy_satdense(void *p);
 
-//Calculates the energy density of a spherical, ideal, noninteracting fermi gas
-//at T = 0
+//Calculates the energy density of a spherical, ideal, 
+//noninteracting fermi gas at saturation density in MeV^3 at T=0
 double energy_density_Fermigas_satdense(void *p);
 
 //Contains equations 25, 30, and 33 from Interactions in nuclear matter
-//by Agnieszka Sorensen
+//Calculates the conditions that all three parameters must satisfy
 int conditions(const gsl_vector* x, void* p,
 					     gsl_vector* fvec);
 
-//Uses GSL multiroot to calculate the parameters which all for the calculation 
-//of the single particle potential 
-potential_results get_parameters(potential_results parameter_results, double tolerance, potential_parameters pparams);
+//Uses GSL multiroot to calculate the parameters A, B, and tau for the 
+//single particle potential 
+potential_results get_parameters(potential_results parameter_results, 
+    double tolerance, potential_parameters pparams);
 
+//Calculates the single particle potential with the calculated parameters
 double get_single_particle_potential(potential_results parameter_results,
      potential_parameters pparams);
 
