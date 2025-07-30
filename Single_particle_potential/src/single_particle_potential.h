@@ -17,7 +17,7 @@
 struct potential_parameters {
     const double degeneracy_g_;
     const double mass_;
-    const double density_;
+    const double saturation_density_;
     const double binding_energy_;
     const double incompress_at_satdense_;
 };
@@ -49,22 +49,9 @@ struct FermiWrapper {
     //noninteracting fermi gas at density n_B at T=0
     double energy_density_Fermigas() const;
 
-    //Calculates the fermi momentum at saturation density in MeV^3
-    double fermi_momentum_satdense() const;
-
-    //Calculates the fermi energy at saturation density in MeV^3
-    double fermi_energy_satdense() const;
-
-    //Calculates the energy density of a spherical, ideal, 
-    //noninteracting fermi gas at saturation density in MeV^3 at T=0
-    double energy_density_Fermigas_satdense() const;
-
     //Static callbacks for GSL
     static double fermi_momentum_callback(void *p);
     static double energy_density_callback(void *p);
-
-    static double fermi_momentum_callback_satdense(void *p);
-    static double fermi_energy_callback_satdense(void *p);
 };
 
 //Contains equations 25, 30, and 33 from Interactions in nuclear matter

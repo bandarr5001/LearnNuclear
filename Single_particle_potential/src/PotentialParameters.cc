@@ -23,7 +23,7 @@ int main() {
       potential_parameters pparams = {
         .degeneracy_g_ = 4.0,     //spin 1/2 for a fermion
         .mass_ = mNucleon,         // mean proton + neutron mass in MeV
-        .density_ = nSat_in_MeV3, //density in MeV^3
+        .saturation_density_ = nSat_in_MeV3, //density in MeV^3
         .binding_energy_ = -16.3, //in MeV
         .incompress_at_satdense_ = 240.0 //in MeV
       };
@@ -34,7 +34,7 @@ int main() {
         .tau = 3.0
       };
 
-      double tolerance = 1e-8;
+      const double tolerance = 1e-8;
 
       parameter_results = get_parameters(parameter_results, tolerance, pparams);
 
