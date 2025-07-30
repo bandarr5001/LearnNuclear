@@ -31,25 +31,41 @@ struct potential_results {
 };
 extern potential_results parameter_results;
 
-//Calculates the fermi momentum at density n_B
-double fermi_momentum(void *p);
+struct FermiWrapper {
+    potential_parameters params;
 
-//Calculates the fermi energy at density n_B
-double fermi_energy(void *p);
+    //Constructor
+    FermiWrapper(const potential_parameters& p);
 
-//Calculates the energy density of a spherical, ideal, 
-//noninteracting fermi gas at density n_B at T=0
-double energy_density_Fermigas(void *p);
+    //Member Functions
 
-//Calculates the fermi momentum at saturation density in MeV^3
-double fermi_momentum_satdense(void *p);
+    //Calculates the fermi momentum at density n_B
+    double fermi_momentum() const;
 
-//Calculates the fermi energy at saturation density in MeV^3
-double fermi_energy_satdense(void *p);
+    //Calculates the fermi energy at density n_B
+    double fermi_energy() const;
 
-//Calculates the energy density of a spherical, ideal, 
-//noninteracting fermi gas at saturation density in MeV^3 at T=0
-double energy_density_Fermigas_satdense(void *p);
+    //Calculates the energy density of a spherical, ideal, 
+    //noninteracting fermi gas at density n_B at T=0
+    double energy_density_Fermigas() const;
+
+    //Calculates the fermi momentum at saturation density in MeV^3
+    double fermi_momentum_satdense() const;
+
+    //Calculates the fermi energy at saturation density in MeV^3
+    double fermi_energy_satdense() const;
+
+    //Calculates the energy density of a spherical, ideal, 
+    //noninteracting fermi gas at saturation density in MeV^3 at T=0
+    double energy_density_Fermigas_satdense() const;
+
+    //Static callbacks for GSL
+    static double fermi_momentum_callback(void *p);
+    static double energy_density_callback(void *p);
+
+    static double fermi_momentum_callback_satdense(void *p);
+    static double fermi_energy_callback_satdense(void *p);
+};
 
 //Contains equations 25, 30, and 33 from Interactions in nuclear matter
 //Calculates the conditions that all three parameters must satisfy
