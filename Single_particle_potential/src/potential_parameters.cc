@@ -1,3 +1,5 @@
+#include "./potential_parameters.h"
+
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
@@ -9,7 +11,7 @@
 #include <iomanip>
 #include "./core_statmech_functions.h"
 #include "./constants.h"
-#include "./single_particle_potential.h"
+
 #include "./Fermi_gas_functions_Tzero.h"
 
 

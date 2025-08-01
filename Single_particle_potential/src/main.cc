@@ -7,7 +7,7 @@
 #include <gsl/gsl_multiroots.h>
 #include <gsl/gsl_vector.h>
 #include <iomanip>
-#include "./single_particle_potential.h"
+#include "./potential_parameters.h"
 
 int main() {
   std::cout << "\n*********************************************************************"

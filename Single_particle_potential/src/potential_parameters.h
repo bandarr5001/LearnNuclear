@@ -1,5 +1,5 @@
-#ifndef single_particle_potential_h
-#define single_particle_potential_h
+#ifndef potential_parameters_h
+#define potential_parameters_h
 
 #include <iostream>
 #include <cmath>
