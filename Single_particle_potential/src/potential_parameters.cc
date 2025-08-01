@@ -1,17 +1,13 @@
 #include "./potential_parameters.h"
 
-#include <iostream>
 #include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <gsl/gsl_roots.h>
+#include <iostream>
+
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_multiroots.h>
 #include <gsl/gsl_vector.h>
-#include <iomanip>
-#include "./core_statmech_functions.h"
-#include "./constants.h"
 
+#include "./constants.h"
 #include "./Fermi_gas_functions_Tzero.h"
 
 
@@ -166,9 +162,10 @@ void PotentialParameters::get_parameters(double tolerance, double A_guess, doubl
       B_ = gsl_vector_get(solver->x, 1);
       tau_ = gsl_vector_get(solver->x, 2);
       
-      std::cout << "Single particle potential parameters: A = " << A_
-		<< " [MeV], B = " << B_ << " [MeV], tau = " << tau_ << " [1]"
-		<< std::endl;
+      std::cout << "Single particle potential parameters:\n"
+		<< "  A = " << A_ << " [MeV]\n"
+		<< "  B = " << B_ << " [MeV]\n"
+		<< "tau = " << tau_ << " [1]" << "\n" << std::endl;
     }
     // Notify the user if the root solver fails to converge
     else {
@@ -189,9 +186,12 @@ double PotentialParameters::get_single_particle_potential(double density) {
   double potential = A_ * (density/saturation_density_) +
     B_ * std::pow(density/saturation_density_, tau_ - 1.0);
 
-  std::cout << "Single particle potential for V(n_B = " << density 
-	    << ") = " << potential << " MeV" << std::endl;
+  std::cout << "Single particle potential for V(n_B = " << density/nSat_in_MeV3 
+	    << "[n0]) = " << potential << " MeV" << std::endl;
     
   //Returns the potential for possible future use
   return potential; 
 }
+
+
+

@@ -1,18 +1,7 @@
 #ifndef potential_parameters_h
 #define potential_parameters_h
 
-#include <iostream>
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <gsl/gsl_roots.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_multiroots.h>
 #include <gsl/gsl_vector.h>
-#include <iomanip>
-#include <memory>   // for std::unique_ptr
-#include "./core_statmech_functions.h"
-#include "./constants.h"
 
 
 
@@ -63,7 +52,7 @@ public:
   // int (PotentialParameters::*)(const gsl_vector*, void*, gsl_vector*).
   // Hence, declaring conditions() as static is necessary.
   static int conditions(const gsl_vector* x, void* p,
-		 gsl_vector* fvec);
+			gsl_vector* fvec);
 
   // Uses GSL multiroot to find the parameters A, B, and tau of the single-particle
   // potential for given nuclear matter properties (saturation_density_, binding_energy_,
