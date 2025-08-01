@@ -9,7 +9,7 @@ LDLIBS = $(shell gsl-config --libs)
 # Source directory
 SRCDIR = src
 # Source files (inside src/)
-SRCS = PotentialParameters.cc core_statmech_functions.cc single_particle_potential.cc
+SRCS = PotentialParameters.cc Fermi_gas_functions_Tzero.cc single_particle_potential.cc
 SRCS := $(addprefix $(SRCDIR)/, $(SRCS))
 
 # Build directory

@@ -41,39 +41,41 @@ public:
   ///////////////////////////////////////////
   // Member functions
 
-  // Calculates the fermi momentum at density n_B
-  double fermi_momentum();
+  // Condition for the value of the binding energy
+  // (equation 25 in "Interactions in nuclear matter" notes)
+  double binding_energy_condition(double A, double B, double tau);
 
-  // Calculates the fermi energy at density n_B
-  double fermi_energy();
+  // Condition for the location of the minimum in the energy per particle, i.e., value of
+  // the saturation density (equation 30 in "Interactions in nuclear matter" notes)
+  double energy_minimum_condition(double A, double B, double tau);
 
-  // Calculates the energy density of a spherical, ideal, 
-  //noninteracting fermi gas at density n_B at T=0
-  double energy_density_Fermigas();
+  // Condition for the value of the incompressibility at saturation density
+  // (equation 33 in "Interactions in nuclear matter" notes)
+  double incompressibility_condition(double A, double B, double tau);
 
-  //Contains equations 25, 30, and 33 from Interactions in nuclear matter
-  //Calculates the conditions that all three parameters must satisfy;
+  // Evaluates equations 25, 30, and 33 from "Interactions in nuclear matter" notes, which
+  // are conditions that all three potential parameters A, B, tau must satisfy.
   // Note: this function needs to be declared static to satisfy the required GSL
   // signature of a function pointer passed to the gsl_multiroot_funtion F: F.f needs a
   // fuction pointer of the type int (*)(const gsl_vector*, void*, gsl_vector*), a plain
   // C-style function pointer without "this". However, a non-static class member function
   // implicitly would have the signature
-  // int (PotentialParameters::*)(const gsl_vector*, void*, gsl_vector*). Hence, declaring
-  // conditions() as static is necessary.
+  // int (PotentialParameters::*)(const gsl_vector*, void*, gsl_vector*).
+  // Hence, declaring conditions() as static is necessary.
   static int conditions(const gsl_vector* x, void* p,
 		 gsl_vector* fvec);
 
-  //Uses GSL multiroot to calculate the parameters A, B, and tau for the 
-  //single particle potential 
-  void get_parameters(double tolerance);
+  // Uses GSL multiroot to find the parameters A, B, and tau of the single-particle
+  // potential for given nuclear matter properties (saturation_density_, binding_energy_,
+  // incompress_at_satdense_); default values of initial parameter guesses are provided
+  void get_parameters(double tolerance, double A_guess = 200.0, double B_guess = 100.0,
+		      double tau_guess = 3.0);
 
-  //Calculates the single particle potential with the calculated parameters
+  // Calculates the single particle potential with the calculated parameters
   double get_single_particle_potential(double density);
 
-  // Static callbacks for GSL
-  static double fermi_momentum_callback(void *p);
-  static double energy_density_callback(void *p);
 
+  
   ///////////////////////////////////////////
   // Return functions for class members
   double degeneracy() { return degeneracy_; }

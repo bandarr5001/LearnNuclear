@@ -10,9 +10,9 @@
 #include "./single_particle_potential.h"
 
 int main() {
-  std::cout << "\n***********************************************************************"
-	    << "\n* This code evaluates nuclear matter potential parameters A, B, & tau *"
-	    << "\n***********************************************************************"
+  std::cout << "\n*********************************************************************"
+	    << "\n* This code finds nuclear matter potential parameters A, B, & tau   *"
+	    << "\n*********************************************************************"
 	    << "\n" << std::endl;
 
   std::cout << std::fixed;
